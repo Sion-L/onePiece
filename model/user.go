@@ -1,14 +1,12 @@
 package model
 
-import "time"
-
 type User struct {
-	ID         int
-	Name       string
-	Email      string
-	DeptName   string
-	CreateTime time.Time
-	UpdateTime time.Time
+	ID         int    `json:"id" binding:"required"`
+	Name       string `json:"name" binding:"required"`
+	Email      string `json:"email" binding:"required"`
+	DeptName   string `json:"dept_name" binding:"required"`
+	CreateTime string `json:"create_time"`
+	UpdateTime string `json:"update_time"`
 }
 
 func (u *User) TableName() string {

@@ -15,9 +15,9 @@ func InitApi(eng *gin.Engine) {
 	eng.GET("/ping", controller.Ping)
 
 	// 接口分组
-	//api := eng.Group("/api/v1")
+	api := eng.Group("/api/v1")
 
 	// 获取所有组
-	//api.GET("project", controller.GetProject)
+	api.POST("addUser", controller.AddUserForLdap)
 
 }
