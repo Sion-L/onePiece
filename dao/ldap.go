@@ -145,3 +145,66 @@ func LdapSearch(en string) (string, bool, error) {
 
 	return en, false, nil
 }
+
+// 删除用户同时删除数据
+func LdapDeleteUser(cn string) error {
+	conn, err := db.NewClientLdap()
+	defer conn.Close()
+
+	if err != nil {
+		return err
+	}
+	sn, err := FindUserByLdap(cn)
+	if err != nil {
+		return err
+	}
+	dn := fmt.Sprintf("uid=%s,ou=employee,dc=lang,dc=com", sn)
+	delReq := ldapv3.NewDelRequest(dn, []ldapv3.Control{})
+	if err := conn.Del(delReq); err != nil {
+		return fmt.Errorf("[DeleteUser] Ldap failed to delete user %s: %s", sn, err.Error())
+	}
+
+	err = DeleteUserByName(cn)
+	if err != nil {
+		return fmt.Errorf("[DeleteUser] database delete user %s failed: %s", sn, err.Error())
+	}
+	return nil
+}
+
+// 汉字转拼音
+func FindUserByLdap(cn string) (string, error) {
+	var (
+		enList   [][]string
+		toList   []string
+		nameList []string
+	)
+	en := pinyin.Pinyin(cn, pinyin.Args{
+		Style:     pinyin.Normal,
+		Heteronym: true,
+	})
+
+	for _, v := range en {
+		duplication := removeDuplication(v)
+		enList = append(enList, duplication)
+	}
+
+	sets := Product(enList...)
+	for _, set := range sets {
+		toList = append(toList, strings.Join(set, ""))
+	}
+
+	for _, v := range toList {
+		name, ok, err := LdapSearch(v) // ok则为不存在 ，!ok 则为存在
+		if err != nil {
+			return "", err
+		}
+		if !ok { // 存在就返回
+			nameList = append(nameList, name) // 不存在的部分
+		}
+	}
+
+	if nameList == nil {
+		return "", fmt.Errorf("要删除的用户不存在: %s")
+	}
+	return nameList[0], nil
+}

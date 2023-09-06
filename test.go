@@ -1,6 +1,17 @@
 package main
 
+import (
+	"fmt"
+	"github.com/Sion-L/onePiece/dao"
+)
+
 func main() {
+	err := dao.LdapDeleteUser("萧何")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("删除成功")
 
 }
 

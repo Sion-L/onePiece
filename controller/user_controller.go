@@ -83,3 +83,21 @@ func AddUserForDB(ou, cn, sn string) error {
 	}
 	return nil
 }
+
+// 删除用户
+func DeleteUser(c *gin.Context) {
+	var res struct {
+		Cn string `json:"cn"`
+	}
+	if err := c.Bind(&res); err != nil {
+		Fail(c, http.StatusOK, "绑定数据错误")
+		return
+	}
+
+	err := dao.LdapDeleteUser(res.Cn)
+	if err != nil {
+		Fail(c, http.StatusOK, fmt.Sprintf("删除用户%s失败: %s", res.Cn, err))
+		return
+	}
+	Success(c, fmt.Sprintf("删除用户%s成功", res.Cn))
+}

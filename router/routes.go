@@ -17,7 +17,10 @@ func InitApi(eng *gin.Engine) {
 	// 接口分组
 	api := eng.Group("/api/v1")
 
-	// 获取所有组
+	// 添加用户
 	api.POST("addUser", controller.AddUserForLdap)
+
+	// 删除用户
+	api.POST("deleteUser", controller.DeleteUser)
 
 }
