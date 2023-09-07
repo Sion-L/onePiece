@@ -1,11 +1,17 @@
 package main
 
 import (
+	"github.com/Sion-L/onePiece/db"
 	"github.com/Sion-L/onePiece/middleware"
 	"github.com/Sion-L/onePiece/router"
 	"github.com/gin-gonic/gin"
 	"time"
 )
+
+func init() {
+	db.NewClientLdap()
+	db.NewClientDB()
+}
 
 func main() {
 

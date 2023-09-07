@@ -31,22 +31,14 @@ import (
 	"fmt"
 	"github.com/Sion-L/onePiece/dao"
 	"github.com/Sion-L/onePiece/model"
+	"github.com/Sion-L/onePiece/types"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
 )
 
-type LdapUser struct {
-	OU string `json:"ou" binding:"required"`
-	CN string `json:"cn" binding:"required"`
-	//SN   string   输入的是中文名,其内转换即可
-	// UID  string	`json:"uid"` 等同于sn
-	// Mail string  sn后加@xxx.xxx
-	Pass string `json:"pass" binding:"required"`
-}
-
 func AddUserForLdap(c *gin.Context) {
-	var form LdapUser
+	var form types.LdapUser
 	if err := c.Bind(&form); err != nil {
 		Fail(c, http.StatusOK, "绑定数据错误")
 		return
@@ -86,18 +78,33 @@ func AddUserForDB(ou, cn, sn string) error {
 
 // 删除用户
 func DeleteUser(c *gin.Context) {
-	var res struct {
-		Cn string `json:"cn"`
-	}
-	if err := c.Bind(&res); err != nil {
+	var form types.LdapDeleteUser
+	if err := c.Bind(&form); err != nil {
 		Fail(c, http.StatusOK, "绑定数据错误")
 		return
 	}
 
-	err := dao.LdapDeleteUser(res.Cn)
+	err := dao.LdapDeleteUser(form.CN)
 	if err != nil {
-		Fail(c, http.StatusOK, fmt.Sprintf("删除用户%s失败: %s", res.Cn, err))
+		Fail(c, http.StatusOK, fmt.Sprintf("删除用户%s失败: %s", form.CN, err))
 		return
 	}
-	Success(c, fmt.Sprintf("删除用户%s成功", res.Cn))
+	Success(c, fmt.Sprintf("删除用户%s成功", form.CN))
+}
+
+// 修改密码
+func ResetPassword(c *gin.Context) {
+	var form types.LdapResetPass
+	if err := c.Bind(&form); err != nil {
+		Fail(c, http.StatusOK, "绑定数据错误")
+		return
+	}
+	sn, _ := dao.FindUserByLdap(form.CN)
+
+	err := dao.LdapResetPassword(sn, form.Password)
+	if err != nil {
+		Fail(c, http.StatusOK, fmt.Sprintf("修改用户%s密码失败: %s", sn, err))
+		return
+	}
+	Success(c, fmt.Sprintf("修改用户%s密码成功", sn))
 }

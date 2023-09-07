@@ -7,12 +7,7 @@ import (
 )
 
 func InsertUserMany(user *model.User) error {
-	db, err := db.NewClientDB()
-	if err != nil {
-		return err
-	}
-
-	result := db.Create(user)
+	result := db.Conn.Create(user)
 	if result.Error != nil {
 		return fmt.Errorf("error inserting records: %s", result.Error.Error())
 	}
@@ -22,13 +17,8 @@ func InsertUserMany(user *model.User) error {
 
 // 查找用户是否存在
 func FindUserByName(name string) (*model.User, error) {
-	db, err := db.NewClientDB()
-	if err != nil {
-		return nil, err
-	}
-
 	var user model.User
-	result := db.Where("name = ?", name).First(&user)
+	result := db.Conn.Where("name = ?", name).First(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -38,12 +28,8 @@ func FindUserByName(name string) (*model.User, error) {
 
 // 删除用户
 func DeleteUserByName(name string) error {
-	db, err := db.NewClientDB()
-	if err != nil {
-		return err
-	}
 
-	result := db.Where("name = ?", name).Delete(&model.User{})
+	result := db.Conn.Where("name = ?", name).Delete(&model.User{})
 	if result.Error != nil {
 		return result.Error
 	}

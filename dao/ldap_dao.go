@@ -88,11 +88,6 @@ func FilterUser(cn string) ([]string, error) {
 
 // AddUser add user to ldap
 func AddUser(ou, sn, cn, pass string) error {
-	conn, err := db.NewClientLdap()
-	if err != nil {
-		panic(err)
-	}
-	defer conn.Close()
 
 	dn := fmt.Sprintf("uid=%s,ou=%s,dc=lang,dc=com", sn, ou) // uid跟sn一样
 	addResponse := ldapv3.NewAddRequest(dn, []ldapv3.Control{})
@@ -103,7 +98,8 @@ func AddUser(ou, sn, cn, pass string) error {
 	addResponse.Attribute("mail", []string{fmt.Sprintf("%s@lang.com", sn)})
 	addResponse.Attribute("uid", []string{sn})
 	addResponse.Attribute("userPassword", []string{pass})
-	if err := conn.Add(addResponse); err != nil {
+
+	if err := db.LdapConn.Add(addResponse); err != nil {
 		if ldapv3.IsErrorWithCode(err, 68) {
 			return fmt.Errorf("user %s already exist", sn)
 		}
@@ -114,16 +110,9 @@ func AddUser(ou, sn, cn, pass string) error {
 }
 
 // 检查用户是否已经存在,存在就返回true
-func LdapSearch(en string) (string, bool, error) {
-	conn, err := db.NewClientLdap()
-	defer conn.Close()
+func LdapSearch(sn string) (string, bool, error) {
 
-	if err != nil {
-		fmt.Println(err)
-		return "", false, err
-	}
-
-	filter := fmt.Sprintf("(&(objectClass=organizationalPerson)(uid=%s))", ldapv3.EscapeFilter(en))
+	filter := fmt.Sprintf("(&(objectClass=organizationalPerson)(uid=%s))", ldapv3.EscapeFilter(sn))
 	searchRequest := ldapv3.NewSearchRequest(
 		"dc=lang,dc=com",
 		ldapv3.ScopeWholeSubtree, ldapv3.NeverDerefAliases, 0, 0, false,
@@ -133,34 +122,30 @@ func LdapSearch(en string) (string, bool, error) {
 		nil,
 	)
 
-	sr, err := conn.Search(searchRequest)
+	sr, err := db.LdapConn.Search(searchRequest)
+
 	if err != nil {
 		fmt.Println(err)
 		return "", false, err
 	}
 
 	if len(sr.Entries) == 0 {
-		return en, true, nil
+		return sn, true, nil
 	}
 
-	return en, false, nil
+	return sn, false, nil
 }
 
 // 删除用户同时删除数据
 func LdapDeleteUser(cn string) error {
-	conn, err := db.NewClientLdap()
-	defer conn.Close()
 
-	if err != nil {
-		return err
-	}
 	sn, err := FindUserByLdap(cn)
 	if err != nil {
 		return err
 	}
 	dn := fmt.Sprintf("uid=%s,ou=employee,dc=lang,dc=com", sn)
 	delReq := ldapv3.NewDelRequest(dn, []ldapv3.Control{})
-	if err := conn.Del(delReq); err != nil {
+	if err := db.LdapConn.Del(delReq); err != nil {
 		return fmt.Errorf("[DeleteUser] Ldap failed to delete user %s: %s", sn, err.Error())
 	}
 
@@ -207,4 +192,17 @@ func FindUserByLdap(cn string) (string, error) {
 		return "", fmt.Errorf("要删除的用户不存在: %s")
 	}
 	return nameList[0], nil
+}
+
+// 修改密码
+func LdapResetPassword(sn, password string) error {
+
+	dn := fmt.Sprintf("uid=%s,ou=employee,dc=lang,dc=com", sn)
+	modReq := ldapv3.NewModifyRequest(dn, []ldapv3.Control{})
+	modReq.Replace("userPassword", []string{password})
+	if err := db.LdapConn.Modify(modReq); err != nil {
+		return fmt.Errorf("[ResetPassword] %s reset password Failed: %s", sn, err.Error())
+	}
+
+	return nil
 }

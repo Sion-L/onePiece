@@ -9,6 +9,9 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
+var Conn *gorm.DB
+var LdapConn *ldapv3.Conn
+
 type DatabaseConfig struct {
 	Database struct {
 		Host     string `yaml:"host"`
@@ -29,34 +32,32 @@ type LdapConfig struct {
 	} `yaml:"ldap"`
 }
 
-func NewClientDB() (*gorm.DB, error) {
+func NewClientDB() {
 	var config DatabaseConfig
 	err := configor.Load(&config, "./config/config.yaml")
 	if err != nil {
-		return nil, fmt.Errorf("error loading config: %s", err)
+		panic(fmt.Errorf("error loading config: %s", err))
 	}
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&loc=Local", config.Database.User, config.Database.Password, config.Database.Host, config.Database.Port, config.Database.DBName)
-	db, err := gorm.Open("mysql", dsn)
+	Conn, err = gorm.Open("mysql", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("error connecting to database: %s", err)
+		panic(fmt.Errorf("error connecting to database: %s", err))
 	}
-	db.AutoMigrate(&model.User{})
-	return db, nil
+	Conn.AutoMigrate(&model.User{})
 }
 
-func NewClientLdap() (*ldapv3.Conn, error) {
+func NewClientLdap() {
 	var config LdapConfig
 	err := configor.Load(&config, "./config/config.yaml")
 	if err != nil {
-		return nil, fmt.Errorf("error loading config: %s", err)
+		panic(fmt.Errorf("error loading config: %s", err))
 	}
-	conn, err := ldapv3.Dial("tcp", fmt.Sprintf("%s:%v", config.Ldap.Host, config.Ldap.Port))
+	LdapConn, err = ldapv3.Dial("tcp", fmt.Sprintf("%s:%v", config.Ldap.Host, config.Ldap.Port))
 	if err != nil {
-		return nil, err
+		panic(fmt.Errorf("error connecting to ldap: %s", err))
 	}
-	err = conn.Bind(config.Ldap.BindDn, config.Ldap.BindPw)
+	err = LdapConn.Bind(config.Ldap.BindDn, config.Ldap.BindPw)
 	if err != nil {
-		return nil, err
+		panic(fmt.Errorf("error binding to ldap: %s", err))
 	}
-	return conn, nil
 }

@@ -5,10 +5,6 @@ import (
 	"net/http"
 )
 
-func Ping(c *gin.Context) {
-	c.JSON(http.StatusOK, "pong")
-}
-
 // gin包装成功日志 - json
 func Success(c *gin.Context, data interface{}) {
 	c.JSON(http.StatusOK, gin.H{
