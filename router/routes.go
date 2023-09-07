@@ -12,15 +12,18 @@ func InitApi(eng *gin.Engine) {
 	eng.Use(middleware.CoreMiddleware)
 
 	// 接口分组
-	api := eng.Group("/api/v1")
+	auth := eng.Group("/api/v1/auth")
+
+	// 登陆
+	auth.POST("login", controller.Login)
 
 	// 添加用户
-	api.POST("addUser", controller.AddUserForLdap)
+	auth.POST("addUser", controller.AddUserForLdap)
 
 	// 删除用户
-	api.POST("deleteUser", controller.DeleteUser)
+	auth.POST("deleteUser", controller.DeleteUser)
 
 	// 修改密码
-	api.POST("changePassword", controller.ResetPassword)
+	auth.POST("changePassword", controller.ResetPassword)
 
 }

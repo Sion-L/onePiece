@@ -40,25 +40,25 @@ import (
 func AddUserForLdap(c *gin.Context) {
 	var form types.LdapUser
 	if err := c.Bind(&form); err != nil {
-		Fail(c, http.StatusOK, "绑定数据错误")
+		types.Fail(c, http.StatusOK, "绑定数据错误")
 		return
 	}
 	name, err := dao.FilterUser(form.CN)
 	if err != nil {
-		Fail(c, http.StatusOK, err.Error())
+		types.Fail(c, http.StatusOK, err.Error())
 		return
 	}
 	err = dao.AddUser(form.OU, name[0], form.CN, form.Pass)
 	if err != nil {
-		Fail(c, http.StatusOK, fmt.Sprintf("添加用户 %s失败:%s", name[0], err.Error()))
+		types.Fail(c, http.StatusOK, fmt.Sprintf("添加用户 %s失败:%s", name[0], err.Error()))
 		return
 	}
 	err = AddUserForDB(form.OU, form.CN, name[0])
 	if err != nil {
-		Fail(c, http.StatusOK, fmt.Sprintf("用户%s信息入库失败: %s", name[0], err.Error()))
+		types.Fail(c, http.StatusOK, fmt.Sprintf("用户%s信息入库失败: %s", name[0], err.Error()))
 		return
 	}
-	Success(c, fmt.Sprintf("添加用户%s成功", name[0]))
+	types.Success(c, fmt.Sprintf("添加用户%s成功", name[0]))
 }
 
 func AddUserForDB(ou, cn, sn string) error {
@@ -80,31 +80,44 @@ func AddUserForDB(ou, cn, sn string) error {
 func DeleteUser(c *gin.Context) {
 	var form types.LdapDeleteUser
 	if err := c.Bind(&form); err != nil {
-		Fail(c, http.StatusOK, "绑定数据错误")
+		types.Fail(c, http.StatusOK, "绑定数据错误")
 		return
 	}
 
 	err := dao.LdapDeleteUser(form.CN)
 	if err != nil {
-		Fail(c, http.StatusOK, fmt.Sprintf("删除用户%s失败: %s", form.CN, err))
+		types.Fail(c, http.StatusOK, fmt.Sprintf("删除用户%s失败: %s", form.CN, err))
 		return
 	}
-	Success(c, fmt.Sprintf("删除用户%s成功", form.CN))
+	types.Success(c, fmt.Sprintf("删除用户%s成功", form.CN))
 }
 
 // 修改密码
 func ResetPassword(c *gin.Context) {
 	var form types.LdapResetPass
 	if err := c.Bind(&form); err != nil {
-		Fail(c, http.StatusOK, "绑定数据错误")
+		types.Fail(c, http.StatusOK, "绑定数据错误")
 		return
 	}
 	sn, _ := dao.FindUserByLdap(form.CN)
 
 	err := dao.LdapResetPassword(sn, form.Password)
 	if err != nil {
-		Fail(c, http.StatusOK, fmt.Sprintf("修改用户%s密码失败: %s", sn, err))
+		types.Fail(c, http.StatusOK, fmt.Sprintf("修改用户%s密码失败: %s", sn, err))
 		return
 	}
-	Success(c, fmt.Sprintf("修改用户%s密码成功", sn))
+	types.Success(c, fmt.Sprintf("修改用户%s密码成功", sn))
+}
+
+// 登陆
+func Login(c *gin.Context) {
+	var form types.LoginUser
+	if err := c.Bind(&form); err != nil {
+		types.Fail(c, http.StatusOK, "绑定数据错误")
+		return
+	}
+	if ok := dao.LoginForLdap(form.UserName, form.Password); !ok {
+		types.Fail(c, http.StatusUnauthorized, "用户名或密码不正确")
+	}
+	types.Success(c, "登陆成功")
 }

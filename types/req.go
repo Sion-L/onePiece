@@ -1,5 +1,10 @@
 package types
 
+type LoginUser struct {
+	UserName string `json:"user_name"`
+	Password string `json:"password"`
+}
+
 type LdapUser struct {
 	OU   string `json:"ou" binding:"required"`
 	CN   string `json:"cn" binding:"required"`

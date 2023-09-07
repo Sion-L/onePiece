@@ -5,6 +5,7 @@ import (
 	"github.com/Sion-L/onePiece/db"
 	ldapv3 "github.com/go-ldap/ldap/v3"
 	"github.com/mozillazg/go-pinyin"
+	"log"
 	"strings"
 )
 
@@ -205,4 +206,34 @@ func LdapResetPassword(sn, password string) error {
 	}
 
 	return nil
+}
+
+// 用户登陆验证
+func LoginForLdap(sn, password string) bool {
+	filter := fmt.Sprintf("(&(uid=%s)(employeeType=1)(memberof=cn=dev,cn=group,dc=lang,dc=com))", sn)
+	attributes := []string{"uid", "cn", "mail", "homePhone"}
+	sql := ldapv3.NewSearchRequest(
+		"dc=lang,dc=com",
+		ldapv3.ScopeWholeSubtree,
+		ldapv3.NeverDerefAliases,
+		0,
+		0,
+		false,
+		filter,
+		attributes,
+		nil)
+	cur, err := db.LdapConn.Search(sql)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(cur.Entries) == 0 {
+		return false
+	}
+
+	entry := cur.Entries[0]
+	err = db.LdapConn.Bind(entry.DN, password)
+	if err != nil {
+		return false
+	}
+	return true
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/jinzhu/configor"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"time"
 )
 
 var Conn *gorm.DB
@@ -32,7 +33,7 @@ type LdapConfig struct {
 	} `yaml:"ldap"`
 }
 
-func NewClientDB() {
+func InitMySQLDB() {
 	var config DatabaseConfig
 	err := configor.Load(&config, "./config/config.yaml")
 	if err != nil {
@@ -43,10 +44,14 @@ func NewClientDB() {
 	if err != nil {
 		panic(fmt.Errorf("error connecting to database: %s", err))
 	}
+	sqlDB := Conn.DB()
+	sqlDB.SetMaxIdleConns(10)                  // 连接池最大闲置连接
+	sqlDB.SetMaxOpenConns(100)                 // 设置最大连接数
+	sqlDB.SetConnMaxLifetime(10 * time.Second) // 设置连接的最大可复用时间
 	Conn.AutoMigrate(&model.User{})
 }
 
-func NewClientLdap() {
+func InitLdap() {
 	var config LdapConfig
 	err := configor.Load(&config, "./config/config.yaml")
 	if err != nil {

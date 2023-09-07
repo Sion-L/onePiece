@@ -9,8 +9,8 @@ import (
 )
 
 func init() {
-	db.NewClientLdap()
-	db.NewClientDB()
+	db.InitLdap()
+	db.InitMySQLDB()
 }
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 	r := gin.New()
 	logger := middleware.GetLogger()
 	r.Use(middleware.GinZap(logger, time.RFC3339, true))
-
+	//r.Use(middleware.JWTAuth())
 	// Logs all panic to error log
 	//   - stack means whether output the stack info.
 	r.Use(middleware.RecoveryWithZap(logger, true))
