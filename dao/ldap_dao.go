@@ -210,29 +210,37 @@ func LdapResetPassword(sn, password string) error {
 
 // 用户登陆验证
 func LoginForLdap(sn, password string) bool {
-	filter := fmt.Sprintf("(&(uid=%s)(employeeType=1)(memberof=cn=dev,cn=group,dc=lang,dc=com))", sn)
-	attributes := []string{"uid", "cn", "mail", "homePhone"}
+	//filter := fmt.Sprintf("(&(uid=%s)(employeeType=1)(|(memberof=cn=dev,cn=group,dc=lang,dc=com)))", sn)
+	attributes := []string{"uid", "cn", "mail", "sn", "userPassword", "employeeType"}
+	filter := fmt.Sprintf("(uniqueMember=uid=%s,ou=employee,dc=lang,dc=com)", sn)
+	//filter := fmt.Sprintf("(&(uid=%s)(memberof=cn=dev,cn=group,dc=lang,dc=com))", sn)
 	sql := ldapv3.NewSearchRequest(
-		"dc=lang,dc=com",
+
+		"cn=dev,cn=group,dc=lang,dc=com",
 		ldapv3.ScopeWholeSubtree,
 		ldapv3.NeverDerefAliases,
 		0,
 		0,
 		false,
 		filter,
-		attributes,
+		attributes, // 为nil表示返回所有属性
 		nil)
+	fmt.Println(sql)
 	cur, err := db.LdapConn.Search(sql)
 	if err != nil {
 		log.Fatal(err)
 	}
 	if len(cur.Entries) == 0 {
+		fmt.Println(cur.Entries)
 		return false
 	}
 
 	entry := cur.Entries[0]
+	fmt.Println(entry.GetAttributeValue("userPassword"))
 	err = db.LdapConn.Bind(entry.DN, password)
 	if err != nil {
+		fmt.Println(entry.DN)
+		fmt.Println(err)
 		return false
 	}
 	return true

@@ -118,6 +118,7 @@ func Login(c *gin.Context) {
 	}
 	if ok := dao.LoginForLdap(form.UserName, form.Password); !ok {
 		types.Fail(c, http.StatusUnauthorized, "用户名或密码不正确")
+		return
 	}
 	types.Success(c, "登陆成功")
 }
