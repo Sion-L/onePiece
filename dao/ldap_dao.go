@@ -210,20 +210,20 @@ func LdapResetPassword(sn, password string) error {
 
 // 用户登陆验证
 func LoginForLdap(sn, password string) bool {
-	//filter := fmt.Sprintf("(&(uid=%s)(employeeType=1)(|(memberof=cn=dev,cn=group,dc=lang,dc=com)))", sn)
-	attributes := []string{"uid", "cn", "mail", "sn", "userPassword", "employeeType"}
-	filter := fmt.Sprintf("(uniqueMember=uid=%s,ou=employee,dc=lang,dc=com)", sn)
-	//filter := fmt.Sprintf("(&(uid=%s)(memberof=cn=dev,cn=group,dc=lang,dc=com))", sn)
-	sql := ldapv3.NewSearchRequest(
 
-		"cn=dev,cn=group,dc=lang,dc=com",
+	// employeeType再加一层过滤。只有类型为1的才能登陆
+	filter := fmt.Sprintf("(&(uid=%s)(employeeType=1)(memberof=%s))", sn, "cn=Ops,cn=group,dc=lang,dc=com")
+
+	//filter := fmt.Sprintf("(uid=%s)", sn)
+	sql := ldapv3.NewSearchRequest(
+		"dc=lang,dc=com",
 		ldapv3.ScopeWholeSubtree,
 		ldapv3.NeverDerefAliases,
 		0,
 		0,
 		false,
 		filter,
-		attributes, // 为nil表示返回所有属性
+		nil, // 为nil表示返回所有属性
 		nil)
 	fmt.Println(sql)
 	cur, err := db.LdapConn.Search(sql)

@@ -1,7 +1,7 @@
 package types
 
 type LoginUser struct {
-	UserName string `json:"user_name"`
+	UserName string `json:"username"`
 	Password string `json:"password"`
 }
 

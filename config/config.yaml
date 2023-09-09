@@ -1,12 +1,12 @@
 database:
-  host: 192.168.110.121
+  host: 192.168.137.44
   port: 3306
   user: root
   password: 123456
   dbname: piece
 
 ldap:
-  host: 192.168.110.121
+  host: 192.168.137.44
   port: 389
   baseDn: dc=lang,dc=com
   bindDn: cn=admin,dc=lang,dc=com
