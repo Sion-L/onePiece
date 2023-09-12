@@ -1,10 +1,12 @@
 package model
 
 type User struct {
-	ID         int    `json:"id" binding:"required"`
-	Name       string `json:"name" binding:"required"`
-	Email      string `json:"email" binding:"required"`
-	DeptName   string `json:"dept_name" binding:"required"`
+	ID         string `json:"id" binding:"required"`
+	UserName   string `json:"user_name" binding:"required"`
+	Email      string `json:"email"`
+	DeptName   string `json:"dept_name"`
+	Role       string `json:"role"`
+	Business   string `json:"business"`
 	CreateTime string `json:"create_time"`
 	UpdateTime string `json:"update_time"`
 }

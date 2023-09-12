@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"github.com/Sion-L/onePiece/model"
 	ldapv3 "github.com/go-ldap/ldap/v3"
 	"github.com/jinzhu/configor"
 	"github.com/jinzhu/gorm"
@@ -48,7 +47,7 @@ func InitMySQLDB() {
 	sqlDB.SetMaxIdleConns(10)                  // 连接池最大闲置连接
 	sqlDB.SetMaxOpenConns(100)                 // 设置最大连接数
 	sqlDB.SetConnMaxLifetime(10 * time.Second) // 设置连接的最大可复用时间
-	Conn.AutoMigrate(&model.User{})
+	//Conn.AutoMigrate(&model.User{})
 }
 
 func InitLdap() {

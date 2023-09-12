@@ -29,7 +29,7 @@ func FindUserByName(name string) (*model.User, error) {
 // 删除用户
 func DeleteUserByName(name string) error {
 
-	result := db.Conn.Where("name = ?", name).Delete(&model.User{})
+	result := db.Conn.Where("user_name = ?", name).Delete(&model.User{})
 	if result.Error != nil {
 		return result.Error
 	}
