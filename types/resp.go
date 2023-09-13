@@ -40,3 +40,12 @@ func Fail(c *gin.Context, code int, msg string) {
 		"data": nil,
 	})
 }
+
+func FailF(c *gin.Context, code int, msg string, err error) {
+	c.JSON(http.StatusOK, gin.H{
+		"code":   code,
+		"msg":    msg,
+		"data":   nil,
+		"detail": err,
+	})
+}

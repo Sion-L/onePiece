@@ -12,6 +12,6 @@ func init() {
 }
 
 func main() {
-	res := dao.LoginForLdap("lilang", "123456")
-	fmt.Print(res)
+	ok := dao.LoginForLdap("lilang", "123456")
+	fmt.Println(ok)
 }

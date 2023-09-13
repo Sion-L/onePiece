@@ -88,9 +88,9 @@ func FilterUser(cn string) ([]string, error) {
 }
 
 // AddUser add user to ldap
-func AddUser(ou, sn, cn, pass string) error {
+func AddUser(sn, cn, pass string) error {
 
-	dn := fmt.Sprintf("uid=%s,ou=%s,dc=lang,dc=com", sn, ou) // uid跟sn一样
+	dn := fmt.Sprintf("uid=%s,ou=%s,dc=lang,dc=com", sn, "employee") // uid跟sn一样
 	addResponse := ldapv3.NewAddRequest(dn, []ldapv3.Control{})
 	addResponse.Attribute("objectClass", []string{"top", "organizationalPerson", "inetOrgPerson", "person"}) // 必填字段 否则报错 LDAP Result Code 65 "Object Class Violation"
 	addResponse.Attribute("employeeType", []string{"1"})                                                     // 工号 暂时没用到
