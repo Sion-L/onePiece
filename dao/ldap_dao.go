@@ -126,7 +126,6 @@ func LdapSearch(sn string) (string, bool, error) {
 	sr, err := db.LdapConn.Search(searchRequest)
 
 	if err != nil {
-		fmt.Println(err)
 		return "", false, err
 	}
 
@@ -138,21 +137,27 @@ func LdapSearch(sn string) (string, bool, error) {
 }
 
 // 删除用户同时删除数据
-func LdapDeleteUser(cn string) error {
+func LdapDeleteUser(id, cn string) error {
 
 	sn, err := FindUserByLdap(cn)
 	if err != nil {
 		return err
 	}
 	dn := fmt.Sprintf("uid=%s,ou=employee,dc=lang,dc=com", sn)
-	delReq := ldapv3.NewDelRequest(dn, []ldapv3.Control{})
-	if err := db.LdapConn.Del(delReq); err != nil {
-		return fmt.Errorf("[DeleteUser] Ldap failed to delete user %s: %s", sn, err.Error())
+
+	_, err = FindUserByLdap(cn)
+	if err != nil {
+		return err
 	}
 
-	err = DeleteUserByName(cn)
+	delReq := ldapv3.NewDelRequest(dn, []ldapv3.Control{})
+	if err := db.LdapConn.Del(delReq); err != nil {
+		return fmt.Errorf("[DeleteUser] Ldap failed to delete user %s: %v", sn, err)
+	}
+
+	err = DeleteUserByUserId(id)
 	if err != nil {
-		return fmt.Errorf("[DeleteUser] database delete user %s failed: %s", sn, err.Error())
+		return fmt.Errorf("[DeleteUser] database delete user %s failed: %v", sn, err)
 	}
 	return nil
 }
@@ -190,7 +195,7 @@ func FindUserByLdap(cn string) (string, error) {
 	}
 
 	if nameList == nil {
-		return "", fmt.Errorf("要删除的用户不存在: %s")
+		return "", fmt.Errorf("要删除的用户不存在")
 	}
 	return nameList[0], nil
 }
@@ -202,7 +207,7 @@ func LdapResetPassword(sn, password string) error {
 	modReq := ldapv3.NewModifyRequest(dn, []ldapv3.Control{})
 	modReq.Replace("userPassword", []string{password})
 	if err := db.LdapConn.Modify(modReq); err != nil {
-		return fmt.Errorf("[ResetPassword] %s reset password Failed: %s", sn, err.Error())
+		return fmt.Errorf("[ResetPassword] %s reset password Failed: %v", sn, err)
 	}
 
 	return nil

@@ -9,7 +9,7 @@ import (
 func InsertUserMany(user *model.User) error {
 	result := db.Conn.Create(user)
 	if result.Error != nil {
-		return fmt.Errorf("error inserting records: %s", result.Error)
+		return fmt.Errorf("error inserting records: %v", result.Error)
 	}
 
 	return nil
@@ -27,12 +27,23 @@ func FindUserByName(en string) (*model.User, error) {
 }
 
 // 删除用户
-func DeleteUserByName(cn string) error {
+func DeleteUserByUserId(id string) error {
 
-	result := db.Conn.Where("cn = ?", cn).Delete(&model.User{})
+	result := db.Conn.Where("id = ?", id).Delete(&model.User{})
 	if result.Error != nil {
 		return result.Error
 	}
 
 	return nil
+}
+
+// 查询所有用户
+func FindAllUser() ([]*model.User, error) {
+	var users []*model.User
+	result := db.Conn.Find(&users)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return users, nil
 }

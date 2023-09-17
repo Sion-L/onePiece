@@ -14,6 +14,9 @@ func InitApi(eng *gin.Engine) {
 	// 接口分组
 	auth := eng.Group("/api/v1/auth")
 
+	// 添加jwt
+	//auth.Use(middleware.JWTMiddleware())
+
 	// 登陆
 	auth.POST("login", controller.Login)
 
@@ -26,4 +29,6 @@ func InitApi(eng *gin.Engine) {
 	// 修改密码
 	auth.POST("changePassword", controller.ResetPassword)
 
+	// 查询所有用户信息
+	auth.GET("getAllUser", controller.FindAllUser)
 }

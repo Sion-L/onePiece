@@ -37,12 +37,12 @@ func InitMySQLDB() {
 	var config DatabaseConfig
 	err := configor.Load(&config, "./config/config.yaml")
 	if err != nil {
-		panic(fmt.Errorf("error loading config: %s", err))
+		panic(fmt.Errorf("error loading config: %v", err))
 	}
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&loc=Local", config.Database.User, config.Database.Password, config.Database.Host, config.Database.Port, config.Database.DBName)
 	Conn, err = gorm.Open("mysql", dsn)
 	if err != nil {
-		panic(fmt.Errorf("error connecting to database: %s", err))
+		panic(fmt.Errorf("error connecting to database: %v", err))
 	}
 	sqlDB := Conn.DB()
 	sqlDB.SetMaxIdleConns(10)                  // 连接池最大闲置连接
@@ -55,14 +55,14 @@ func InitLdap() {
 	var config LdapConfig
 	err := configor.Load(&config, "./config/config.yaml")
 	if err != nil {
-		panic(fmt.Errorf("error loading config: %s", err))
+		panic(fmt.Errorf("error loading config: %v", err))
 	}
 	LdapConn, err = ldapv3.Dial("tcp", fmt.Sprintf("%s:%v", config.Ldap.Host, config.Ldap.Port))
 	if err != nil {
-		panic(fmt.Errorf("error connecting to ldap: %s", err))
+		panic(fmt.Errorf("error connecting to ldap: %v", err))
 	}
 	err = LdapConn.Bind(config.Ldap.BindDn, config.Ldap.BindPw)
 	if err != nil {
-		panic(fmt.Errorf("error binding to ldap: %s", err))
+		panic(fmt.Errorf("error binding to ldap: %v", err))
 	}
 }

@@ -41,7 +41,7 @@ func Fail(c *gin.Context, code int, msg string) {
 	})
 }
 
-func FailF(c *gin.Context, code int, msg string, err error) {
+func FailF(c *gin.Context, code int, msg string, err string) {
 	c.JSON(http.StatusOK, gin.H{
 		"code":   code,
 		"msg":    msg,

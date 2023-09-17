@@ -11,6 +11,7 @@ type LdapUser struct {
 }
 
 type LdapDeleteUser struct {
+	Id string `json:"id" binding:"required"`
 	Cn string `json:"cn" binding:"required"`
 }
 
